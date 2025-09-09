@@ -1,12 +1,28 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from models import Product
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from models import Product
 
 
 app = FastAPI()
 
-app.mount("/app", StaticFiles(directory="frontend/build", html=True), name="static")
+# Serve static assets
+app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
+
+# Serve index.html at root
+@app.get("/", include_in_schema=False)
+def serve_index():
+    return FileResponse("frontend/build/index.html")
+
+# SPA fallback for client-side routing
+@app.get("/{full_path:path}", include_in_schema=False)
+def spa_fallback(full_path: str):
+    reserved = ("api", "docs", "openapi.json", "redoc")
+    if full_path.startswith(reserved):
+        raise HTTPException(status_code=404, detail="Not Found")
+    return FileResponse("frontend/build/index.html")
 
 app.add_middleware(
     CORSMiddleware,
