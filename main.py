@@ -1,17 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import Product
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000",  
-]
+app.mount("/app", StaticFiles(directory="frontend/build", html=True), name="static")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -23,24 +22,24 @@ products = [
     Product(id=4, name="Table", description="A wooden table", price=199.99, quantity=20),
 ]
 
-@app.get("/products/")
+@app.get("/api/products/")
 def get_all_products():
     return products
 
 
-@app.get("/products/{product_id}")
+@app.get("/api/products/{product_id}")
 def get_product_by_id(product_id: int):
     for product in products:
         if product.id == product_id:
             return product
     return {"error": "Product not found"}
 
-@app.post("/products/")
+@app.post("/api/products/")
 def create_product(product: Product):
     products.append(product)
     return {"message": "Product created successfully", "product": product}
 
-@app.put("/products/{product_id}")
+@app.put("/api/products/{product_id}")
 def update_product(product_id: int, product: Product):
     for i in range(len(products)):
         if products[i].id == product_id:
@@ -48,7 +47,7 @@ def update_product(product_id: int, product: Product):
             return {"message": "Product updated successfully", "product": product}
     return {"error": "Product not found"}
 
-@app.delete("/products/{product_id}")
+@app.delete("/api/products/{product_id}")
 def delete_product(product_id: int):
     for i in range(len(products)):
         if products[i].id == product_id:
