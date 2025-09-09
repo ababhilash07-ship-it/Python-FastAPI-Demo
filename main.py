@@ -19,6 +19,8 @@ def serve_index():
 # SPA fallback for client-side routing
 @app.get("/{full_path:path}", include_in_schema=False)
 def spa_fallback(full_path: str):
+    if full_path.startswith(("api", "docs", "openapi.json", "redoc")):
+        return {"detail": "Not Found"}
     return FileResponse("frontend/build/index.html")
 
 app.add_middleware(
