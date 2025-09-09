@@ -16,13 +16,6 @@ app.mount("/static", StaticFiles(directory="frontend/build/static"), name="stati
 def serve_index():
     return FileResponse("frontend/build/index.html")
 
-# SPA fallback for client-side routing
-@app.get("/{full_path:path}", include_in_schema=False)
-def spa_fallback(full_path: str):
-    if full_path.startswith(("api", "docs", "openapi.json", "redoc")):
-        return {"detail": "Not Found"}
-    return FileResponse("frontend/build/index.html")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -69,3 +62,10 @@ def delete_product(product_id: int):
             del products[i]
             return {"message": "Product deleted successfully"}
     return {"error": "Product not found"}
+
+# SPA fallback for client-side routing
+@app.get("/{full_path:path}", include_in_schema=False)
+def spa_fallback(full_path: str):
+    if full_path.startswith(("api", "docs", "openapi.json", "redoc")):
+        return {"detail": "Not Found"}
+    return FileResponse("frontend/build/index.html")
